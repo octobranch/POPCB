@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>POP Clipboard</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POP Clipboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c63ff;
+            --primary-light: #8a85ff;
+            --primary-dark: #5651d4;
+            --secondary: #ff6584;
+            --success: #4caf50;
+            --info: #2196f3;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.97);
+            --border-radius: 16px;
+            --shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --glass-effect: rgba(255, 255, 255, 0.08);
+        }
+
+        .dark-mode {
+            --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --card-bg: rgba(30, 30, 46, 0.95);
+            --light: #2d2d46;
+            --dark: #f8f9fa;
+            --gray: #a0a0c0;
+            --light-gray: #4a4a6a;
+            --shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+            --glass-effect: rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: var(--dark);
+            transition: var(--transition);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 10% 20%, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 90%);
+            z-index: -1;
+        }
+
+        .dark-mode body::before {
+            background: radial-gradient(circle at 10% 20%, rgba(26, 26, 46, 0.2) 0%, rgba(22, 33, 62, 0.2) 90%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            min-height: 100vh;
+        }
+
+        /* HEADER STYLES */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            position: relative;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: clamp(2.2rem, 5vw, 3.2rem);
+            margin-bottom: 15px;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            position: relative;
+            display: inline-block;
+            padding: 0 15px;
+        }
+
+        .header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 10px;
+        }
+
+        .header p {
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            max-width: 700px;
+            margin: 20px auto 0;
+            color: rgba(255, 255, 255, 0.92);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-controls {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            gap: 15px;
+        }
+
+        /* MAIN CONTENT LAYOUT */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @media (min-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr 350px;
+            }
+        }
+
+        /* EDITOR SECTION */
+        .editor-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid var(--glass-effect);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-gray);
+            color: var(--primary-dark);
+            font-size: 1.5rem;
+        }
+
+        .section-title i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            background: rgba(108, 99, 255, 0.15);
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .editor-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        /* BUTTON STYLES */
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: var(--transition);
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        .btn:hover::after {
+            opacity: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid var(--light-gray);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #2e7d32);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, var(--info), #0d47a1);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #e65100);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #b71c1c);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        /* TEXTAREA STYLES */
+        .textarea-container {
+            position: relative;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--light);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .main-textarea {
+            width: 100%;
+            flex-grow: 1;
+            min-height: 250px;
+            padding: 25px;
+            border: none;
+            font-size: 16px;
+            line-height: 1.75;
+            resize: none;
+            font-family: inherit;
+            transition: var(--transition);
+            background: transparent;
+            color: var(--dark);
+        }
+
+        .main-textarea:focus {
+            outline: none;
+            box-shadow: inset 0 0 0 2px var(--primary);
+        }
+
+        .main-textarea::placeholder {
+            color: var(--gray);
+            opacity: 0.7;
+        }
+
+        .char-counter {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            font-size: 13px;
+            color: var(--gray);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 6px 12px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        /* TAG SELECTOR */
+        .tag-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0 25px;
+        }
+
+        .tag-option {
+            padding: 10px 18px;
+            background: rgba(108, 99, 255, 0.1);
+            border-radius: 30px;
+            font-size: 0.95rem;
+            color: var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            font-weight: 500;
+        }
+
+        .tag-option:hover, .tag-option.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        /* NOTES SIDEBAR */
+        .notes-sidebar {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            max-height: 85vh;
+            overflow-y: auto;
+            transition: var(--transition);
+            border: 1px solid var(--glass-effect);
+        }
+
+        .notes-sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .notes-sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .notes-sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            background: rgba(108, 99, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--glass-effect);
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 14px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .dark-mode .stat-item {
+            background: rgba(30, 30, 46, 0.4);
+        }
+
+        .stat-number {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            font-weight: 500;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 16px 16px 16px 50px;
+            border: 2px solid var(--light-gray);
+            border-radius: 14px;
+            font-size: 16px;
+            transition: var(--transition);
+            background: var(--light);
+            color: var(--dark);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 18px;
+        }
+
+        .notes-list {
+            display: grid;
+            gap: 18px;
+        }
+
+        /* NOTE ITEM */
+        .note-item {
+            background: var(--light);
+            border: 2px solid var(--light-gray);
+            border-radius: 16px;
+            padding: 22px;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .note-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .note-item.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            box-shadow: 0 0 20px rgba(108, 99, 255, 0.25);
+        }
+
+        .dark-mode .note-item.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .note-title {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .note-date {
+            font-size: 0.85rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .note-preview {
+            font-size: 15px;
+            color: var(--dark);
+            line-height: 1.65;
+            margin-bottom: 18px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            opacity: 0.9;
+        }
+
+        .note-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .note-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 6px 14px;
+            background: rgba(108, 99, 255, 0.12);
+            border-radius: 30px;
+            font-size: 0.82rem;
+            color: var(--primary);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .tag:hover {
+            background: rgba(108, 99, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .note-action-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--light-gray);
+            color: var(--dark);
+            border: none;
+            font-size: 16px;
+        }
+
+        .note-action-btn:hover {
+            transform: scale(1.12);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-action-btn.copy {
+            background: rgba(33, 150, 243, 0.12);
+            color: var(--info);
+        }
+
+        .note-action-btn.edit {
+            background: rgba(76, 175, 80, 0.12);
+            color: var(--success);
+        }
+
+        .note-action-btn.delete {
+            background: rgba(244, 67, 54, 0.12);
+            color: var(--danger);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            color: var(--gray);
+            font-style: italic;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 14px;
+            margin-top: 10px;
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: var(--light-gray);
+            opacity: 0.6;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        /* TOAST NOTIFICATION */
+        .toast {
+            position: fixed;
+            bottom: 35px;
+            right: 35px;
+            background: var(--success);
+            color: white;
+            padding: 20px 28px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            transform: translateX(400px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, var(--info), #0d47a1);
+        }
+
+        .toast.warning {
+            background: linear-gradient(135deg, var(--warning), #e65100);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, var(--danger), #b71c1c);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* THEME TOGGLE */
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: white;
+            font-size: 1.4rem;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(15deg) scale(1.1);
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 991px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            .header {
+                margin-bottom: 30px;
+                padding: 20px 0;
+            }
+
+            .header h1 {
+                font-size: 2.4rem;
+            }
+
+            .header p {
+                font-size: 1.15rem;
+            }
+
+            .header-controls {
+                position: relative;
+                top: auto;
+                right: auto;
+                justify-content: center;
+                margin-top: 20px;
+            }
+
+            .editor-section, .notes-sidebar {
+                padding: 25px;
+            }
+
+            .editor-controls {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .editor-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.3rem;
+            }
+
+            .editor-section, .notes-sidebar {
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .tag-selector {
+                justify-content: center;
+            }
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.4); }
+            70% { box-shadow: 0 0 0 18px rgba(108, 99, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0); }
+        }
+
+        /* LOADING ANIMATION */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-clipboard-list"></i> POP Clipboard</h1>
+            <p>Gestiona, organiza y edita todas tus notas de texto de forma inteligente con nuestro sistema avanzado</p>
+            
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-section">
+                <div class="section-title">
+                    <i class="fas fa-edit"></i>
+                    <h2>Editor de Notas</h2>
+                </div>
+
+                <div class="editor-controls">
+                    <button class="btn btn-primary" onclick="pasteText()">
+                        <i class="fas fa-paste"></i> Pegar Texto
+                    </button>
+                    <button class="btn btn-success" onclick="saveNote()">
+                        <i class="fas fa-save"></i> Guardar Nota
+                    </button>
+                    <button class="btn btn-info" onclick="copyText()">
+                        <i class="fas fa-copy"></i> Copiar Todo
+                    </button>
+                    <button class="btn btn-warning" onclick="clearEditor()">
+                        <i class="fas fa-broom"></i> Limpiar
+                    </button>
+                </div>
+
+                <div class="tag-selector">
+                    <div class="tag-option" data-tag="trabajo">Trabajo</div>
+                    <div class="tag-option" data-tag="personal">Personal</div>
+                    <div class="tag-option" data-tag="ideas">Ideas</div>
+                    <div class="tag-option" data-tag="importante">Importante</div>
+                    <div class="tag-option" data-tag="temporal">Temporal</div>
+                </div>
+
+                <div class="textarea-container">
+                    <textarea 
+                        id="mainTextarea" 
+                        class="main-textarea" 
+                        placeholder="Pega aquí tu texto o escribe una nueva nota... Puedes editar, formatear y gestionar todo tu contenido."
+                        oninput="updateCharCounter()"
+                    ></textarea>
+                    <div class="char-counter" id="charCounter">0 caracteres</div>
+                </div>
+            </div>
+
+            <div class="notes-sidebar">
+                <div class="section-title">
+                    <i class="fas fa-sticky-note"></i>
+                    <h2>Mis Notas</h2>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalNotes">0</div>
+                        <div class="stat-label">Notas Totales</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalChars">0</div>
+                        <div class="stat-label">Caracteres Totales</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="activeNotes">0</div>
+                        <div class="stat-label">Notas Activas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="savedSpace">0KB</div>
+                        <div class="stat-label">Espacio Ahorrado</div>
+                    </div>
+                </div>
+
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        class="search-box" 
+                        id="searchBox" 
+                        placeholder="Buscar en notas..." 
+                        oninput="searchNotes()"
+                    >
+                </div>
+
+                <div id="notesList" class="notes-list">
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No hay notas guardadas</p>
+                        <p>¡Comienza guardando tu primera nota!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle"></i>
+        <div class="toast-message">Operación completada con éxito</div>
+    </div>
+
+    <script>
+        // Variables globales
+        let notes = JSON.parse(localStorage.getItem('clipboardNotes') || '[]');
+        let currentNoteId = null;
+        let selectedTags = [];
+
+        // Cargar notas al iniciar
+        window.addEventListener('load', () => {
+            loadNotes();
+            updateCharCounter();
+            updateStats();
+            setupEventListeners();
+            checkFirstTimeUser();
+        });
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Tema oscuro/claro
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Tag selector
+            document.querySelectorAll('.tag-option').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const tagValue = this.getAttribute('data-tag');
+                    
+                    if (this.classList.contains('active')) {
+                        selectedTags.push(tagValue);
+                    } else {
+                        selectedTags = selectedTags.filter(t => t !== tagValue);
+                    }
+                    
+                    // Resaltar el botón de guardar si hay cambios
+                    if (selectedTags.length > 0) {
+                        document.querySelector('.btn-success').classList.add('pulse');
+                    } else {
+                        document.querySelector('.btn-success').classList.remove('pulse');
+                    }
+                });
+            });
+        }
+
+        // Comprobar si es la primera vez del usuario
+        function checkFirstTimeUser() {
+            const firstTime = localStorage.getItem('firstTime') === null;
+            if (firstTime) {
+                showToast('¡Bienvenido a Portapapeles Digital Pro! Comienza pegando o escribiendo una nota.', 'info');
+                localStorage.setItem('firstTime', 'false');
+            }
+        }
+
+        // Alternar tema oscuro/claro
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.querySelector('#themeToggle i');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                showToast('Modo oscuro activado', 'info');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                showToast('Modo claro activado', 'info');
+            }
+        }
+
+        // Funciones principales
+        async function pasteText() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const textarea = document.getElementById('mainTextarea');
+                textarea.value = text;
+                updateCharCounter();
+                showToast('✅ Texto pegado correctamente');
+            } catch (err) {
+                // Fallback para navegadores sin soporte completo de clipboard API
+                const textarea = document.getElementById('mainTextarea');
+                textarea.focus();
+                try {
+                    const result = document.execCommand('paste');
+                    if (result) {
+                        updateCharCounter();
+                        showToast('✅ Texto pegado correctamente');
+                    } else {
+                        showToast('⚠️ Pega manualmente usando Ctrl+V', 'warning');
+                    }
+                } catch (e) {
+                    showToast('⚠️ Pega manualmente usando Ctrl+V', 'warning');
+                }
+            }
+        }
+
+        async function copyText() {
+            const textarea = document.getElementById('mainTextarea');
+            if (textarea.value.trim() === '') {
+                showToast('⚠️ No hay texto para copiar', 'warning');
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(textarea.value);
+                showToast('✅ Texto copiado al portapapeles');
+            } catch (err) {
+                // Fallback para navegadores que no soportan la API moderna
+                textarea.select();
+                document.execCommand('copy');
+                showToast('✅ Texto copiado al portapapeles');
+            }
+        }
+
+        function saveNote() {
+            const textarea = document.getElementById('mainTextarea');
+            const text = textarea.value.trim();
+            
+            if (text === '') {
+                showToast('⚠️ No puedes guardar una nota vacía', 'warning');
+                return;
+            }
+
+            // Crear título basado en las primeras palabras
+            const words = text.split(/\s+/);
+            const title = words.length > 5 ? words.slice(0, 5).join(' ') + '...' : text.substring(0, 30);
+
+            const note = {
+                id: currentNoteId || Date.now(),
+                title: title,
+                content: text,
+                tags: [...selectedTags],
+                timestamp: new Date().toLocaleString('es-ES', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                preview: text.substring(0, 150) + (text.length > 150 ? '...' : '')
+            };
+
+            if (currentNoteId) {
+                // Actualizar nota existente
+                const index = notes.findIndex(n => n.id === currentNoteId);
+                if (index !== -1) {
+                    notes[index] = note;
+                    showToast('✅ Nota actualizada correctamente');
+                }
+            } else {
+                // Nueva nota
+                notes.unshift(note);
+                showToast('✅ Nota guardada correctamente');
+            }
+
+            saveNotes();
+            renderNotes();
+            updateStats();
+            currentNoteId = note.id;
+            highlightActiveNote();
+            
+            // Resetear tags
+            selectedTags = [];
+            document.querySelectorAll('.tag-option').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            
+            // Quitar animación de guardar
+            document.querySelector('.btn-success').classList.remove('pulse');
+        }
+
+        function loadNote(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (note) {
+                document.getElementById('mainTextarea').value = note.content;
+                currentNoteId = noteId;
+                updateCharCounter();
+                highlightActiveNote();
+                showToast('📖 Nota cargada');
+                
+                // Cargar tags
+                selectedTags = [...note.tags];
+                document.querySelectorAll('.tag-option').forEach(tag => {
+                    const tagValue = tag.getAttribute('data-tag');
+                    if (note.tags.includes(tagValue)) {
+                        tag.classList.add('active');
+                    } else {
+                        tag.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        function deleteNote(noteId, event) {
+            event.stopPropagation();
+            if (confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
+                notes = notes.filter(n => n.id !== noteId);
+                
+                if (currentNoteId === noteId) {
+                    document.getElementById('mainTextarea').value = '';
+                    currentNoteId = null;
+                    updateCharCounter();
+                    selectedTags = [];
+                    document.querySelectorAll('.tag-option').forEach(tag => {
+                        tag.classList.remove('active');
+                    });
+                }
+                
+                saveNotes();
+                renderNotes();
+                updateStats();
+                showToast('🗑️ Nota eliminada');
+            }
+        }
+
+        async function copyNoteContent(noteId, event) {
+            event.stopPropagation();
+            const note = notes.find(n => n.id === noteId);
+            if (note) {
+                try {
+                    await navigator.clipboard.writeText(note.content);
+                    showToast('✅ Contenido copiado al portapapeles');
+                } catch (err) {
+                    showToast('❌ Error al copiar el contenido', 'error');
+                }
+            }
+        }
+
+        function clearEditor() {
+            if (confirm('¿Estás seguro de que quieres limpiar el editor?')) {
+                document.getElementById('mainTextarea').value = '';
+                currentNoteId = null;
+                updateCharCounter();
+                highlightActiveNote();
+                selectedTags = [];
+                document.querySelectorAll('.tag-option').forEach(tag => {
+                    tag.classList.remove('active');
+                });
+                showToast('🧹 Editor limpiado');
+            }
+        }
+
+        function searchNotes() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            const filteredNotes = notes.filter(note => 
+                note.content.toLowerCase().includes(query) ||
+                note.title.toLowerCase().includes(query) ||
+                note.tags.some(tag => tag.toLowerCase().includes(query)) ||
+                note.timestamp.toLowerCase().includes(query)
+            );
+            renderNotes(filteredNotes);
+        }
+
+        // Funciones de utilidad
+        function renderNotes(notesToRender = notes) {
+            const notesList = document.getElementById('notesList');
+            
+            if (notesToRender.length === 0) {
+                notesList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>${notes.length === 0 ? 'No hay notas guardadas' : 'No se encontraron notas'}</p>
+                        <p>${notes.length === 0 ? '¡Comienza guardando tu primera nota!' : 'Intenta con otra búsqueda'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            notesList.innerHTML = notesToRender.map(note => `
+                <div class="note-item fade-in ${currentNoteId === note.id ? 'active' : ''}" 
+                     onclick="loadNote(${note.id})">
+                    <div class="note-header">
+                        <div class="note-title">
+                            <i class="fas fa-sticky-note"></i>
+                            ${escapeHtml(note.title)}
+                        </div>
+                        <div class="note-date">${note.timestamp}</div>
+                    </div>
+                    <div class="note-preview">${escapeHtml(note.preview)}</div>
+                    <div class="note-footer">
+                        <div class="note-tags">
+                            ${note.tags.map(tag => `<div class="tag">${escapeHtml(tag)}</div>`).join('')}
+                        </div>
+                        <div class="note-actions">
+                            <button class="note-action-btn edit" title="Editar nota" onclick="event.stopPropagation(); loadNote(${note.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="note-action-btn copy" title="Copiar contenido" onclick="copyNoteContent(${note.id}, event)">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="note-action-btn delete" title="Eliminar nota" onclick="deleteNote(${note.id}, event)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function highlightActiveNote() {
+            document.querySelectorAll('.note-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            if (currentNoteId) {
+                const activeNote = document.querySelector(`[onclick="loadNote(${currentNoteId})"]`);
+                if (activeNote) {
+                    activeNote.classList.add('active');
+                }
+            }
+        }
+
+        function updateCharCounter() {
+            const textarea = document.getElementById('mainTextarea');
+            const counter = document.getElementById('charCounter');
+            const count = textarea.value.length;
+            counter.textContent = `${count.toLocaleString()} caracteres`;
+        }
+
+        function updateStats() {
+            const totalNotes = notes.length;
+            const totalChars = notes.reduce((sum, note) => sum + note.content.length, 0);
+            const activeNotes = notes.filter(note => note.tags.includes('importante')).length;
+            
+            // Calcular espacio ahorrado (1KB ≈ 1000 caracteres)
+            const savedSpaceKB = Math.round(totalChars / 1000);
+            
+            document.getElementById('totalNotes').textContent = totalNotes;
+            document.getElementById('totalChars').textContent = totalChars.toLocaleString();
+            document.getElementById('activeNotes').textContent = activeNotes;
+            document.getElementById('savedSpace').textContent = `${savedSpaceKB}KB`;
+        }
+
+        function saveNotes() {
+            try {
+                localStorage.setItem('clipboardNotes', JSON.stringify(notes));
+            } catch (error) {
+                console.error('Error guardando notas:', error);
+                showToast('❌ Error al guardar las notas. Espacio de almacenamiento excedido.', 'error');
+            }
+        }
+
+        function loadNotes() {
+            try {
+                const savedNotes = localStorage.getItem('clipboardNotes');
+                if (savedNotes) {
+                    notes = JSON.parse(savedNotes);
+                }
+                renderNotes();
+            } catch (error) {
+                console.error('Error cargando notas:', error);
+                notes = [];
+                renderNotes();
+                showToast('❌ Error al cargar las notas. Se reiniciará el almacenamiento.', 'error');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastIcon = toast.querySelector('i');
+            const toastMessage = toast.querySelector('.toast-message');
+            
+            // Actualizar icono según el tipo
+            if (type === 'success') {
+                toastIcon.className = 'fas fa-check-circle';
+            } else if (type === 'info') {
+                toastIcon.className = 'fas fa-info-circle';
+            } else if (type === 'warning') {
+                toastIcon.className = 'fas fa-exclamation-triangle';
+            } else {
+                toastIcon.className = 'fas fa-exclamation-circle';
+            }
+            
+            toastMessage.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 's':
+                        e.preventDefault();
+                        saveNote();
+                        break;
+                    case 'v':
+                        if (e.target.id !== 'mainTextarea') {
+                            e.preventDefault();
+                            pasteText();
+                        }
+                        break;
+                    case 'c':
+                        if (e.target.id !== 'mainTextarea') {
+                            e.preventDefault();
+                            copyText();
+                        }
+                        break;
+                }
+            }
+        });
+
+        // Autoguardado y detección de cambios
+        let lastContent = '';
+        let autoSaveTimeout = null;
+
+        // Función para detectar cambios y activar autoguardado
+        function handleTextChange() {
+            const currentContent = document.getElementById('mainTextarea').value;
+            
+            // Cancelar timeout anterior
+            if (autoSaveTimeout) {
+                clearTimeout(autoSaveTimeout);
+            }
+            
+            // Si hay una nota activa y el contenido cambió, programar autoguardado
+            if (currentNoteId && currentContent !== lastContent && currentContent.trim() !== '') {
+                autoSaveTimeout = setTimeout(() => {
+                    saveNote();
+                    lastContent = currentContent;
+                    showToast('💾 Auto-guardado', 'info');
+                }, 10000); // 10 segundos después del último cambio
+            }
+        }
+
+        // Agregar listener para cambios en el textarea
+        window.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.getElementById('mainTextarea');
+            if (textarea) {
+                textarea.addEventListener('input', handleTextChange);
+            }
+        });
+    </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
